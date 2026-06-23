@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserPlan {
+  free
+  pro
+  credits
+}
+
+enum TaskType {
+  task1
+  task2
+}
+
+enum TestType {
+  academic
+  general
+}
+
+enum SubmissionStatus {
+  pending
+  processing
+  done
+  failed
+}
+
+enum PracticeDifficulty {
+  easy
+  medium
+  hard
+}
+
+enum PracticeTopic {
+  environment
+  technology
+  education
+  health
+  society
+  economy
+  culture
+  government
+}
+
+model User {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email              String      @unique
+  full_name          String?
+  avatar_url         String?
+  plan               UserPlan    @default(free)
+  credits            Int         @default(3)
+  stripe_customer_id String?
+  // Free plan monthly tracking
+  free_checks_used   Int         @default(0)
+  free_checks_reset  DateTime    @default(now())
+  // Streak tracking
+  current_streak     Int         @default(0)
+  longest_streak     Int         @default(0)
+  last_submission_at DateTime?
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
+
+  submissions  Submission[]
+  coach_sessions CoachSession[]
+
+  @@map("users")
+}
+
+model Submission {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String           @db.Uuid
+  task_type  TaskType
+  test_type  TestType
+  question   String
+  essay      String
+  word_count Int
+  status     SubmissionStatus @default(pending)
+  created_at DateTime         @default(now())
+
+  user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  evaluation  Evaluation?
+  coach_sessions CoachSession[]
+
+  @@map("submissions")
+}
+
+model Evaluation {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submission_id  String   @unique @db.Uuid
+  overall_band   Decimal  @db.Decimal(2, 1)
+  ta_score       Decimal  @db.Decimal(2, 1)
+  cc_score       Decimal  @db.Decimal(2, 1)
+  lr_score       Decimal  @db.Decimal(2, 1)
+  gra_score      Decimal  @db.Decimal(2, 1)
+  feedback       Json
+  improved_essay String
+  tokens_used    Int?
+  processing_ms  Int?
+  created_at     DateTime @default(now())
+
+  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+
+  @@map("evaluations")
+}
+
+model Plan {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  price_monthly    Decimal? @db.Decimal(10, 2)
+  checks_per_month Int?
+  stripe_price_id  String?
+  features         Json
+  created_at       DateTime @default(now())
+
+  @@map("plans")
+}
+
+model Prompt {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @unique
+  content    String
+  version    Int      @default(1)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  @@map("prompts")
+}
+
+// ─── AI Coach feature ─────────────────────────────────────────────────────────
+
+model CoachSession {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String   @db.Uuid
+  submission_id String   @db.Uuid
+  messages      Json     @default("[]")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+
+  @@map("coach_sessions")
+}
+
+// ─── Practice Questions feature ───────────────────────────────────────────────
+
+model PracticeQuestion {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_type           TaskType
+  test_type           TestType
+  topic               PracticeTopic
+  difficulty          PracticeDifficulty
+  question            String
+  band_target         Decimal            @db.Decimal(2, 1)
+  time_limit_minutes  Int                @default(40)
+  tips                Json               @default("[]")
+  created_at          DateTime           @default(now())
+
+  @@map("practice_questions")
+}

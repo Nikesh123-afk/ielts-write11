@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd ../.. && npm run build --filter=@ielts-checker/web",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "outputDirectory": ".next"
+}

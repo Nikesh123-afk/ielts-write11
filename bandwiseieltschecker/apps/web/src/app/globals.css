@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 19%;
+    --foreground: 210 20% 95%;
+    --card: 210 40% 22%;
+    --card-foreground: 210 20% 95%;
+    --popover: 210 40% 20%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 210 40% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 30% 28%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 210 30% 25%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 210 40% 35%;
+    --accent-foreground: 210 20% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 30% 30%;
+    --input: 210 30% 28%;
+    --ring: 210 40% 50%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-navy-900 text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-navy-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-navy-700 rounded-full;
+  }
+}
+
+@layer components {
+  .band-score {
+    font-family: Georgia, 'Source Serif 4', serif;
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:bg-navy-800/60 hover:border-navy-600;
+  }
+}
